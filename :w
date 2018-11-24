@@ -1,7 +1,6 @@
 from PIL import Image
 import time
 import logging
-from math import ceil
 
 ################################################################################
 # Classes
@@ -208,26 +207,18 @@ def endDecode(origImg, ecdImg):
 
   return True
   
-# Returns a tuple of vectors of where to add encoded pixels into an image.
 def getPixelLocations(img, nbPixelsNeeded):
   w,h = img.image.size
   nbPxlAvailable = w*h
 
   # Periodicity = How many pixels between an encoded pixel.
-  # period = ceil(nbPxlAvailable / nbPixelsNeeded)
   period = nbPxlAvailable // nbPixelsNeeded
+  logging.info("Each encoded pixel will jump by {} pixels.".format(period))
 
   loc = []
   for i in range(h):
     for j in range(0, w, period): # Jump in increments of the period
       loc.append(tuple([j,i])) 
-
-  logging.info("Width of image = {}\tHeight of image = {}".format(w,h))
-  logging.info("nbPxlAvailable = {}\tnbPixelsNeeded = {}".format(
-                nbPxlAvailable, nbPixelsNeeded))
-  logging.info("Each encoded pixel will jump by {} pixels.".format(period))
-  logging.info("Last entry in location vector = {}".format(loc[-1]))
-  logging.info("Length of the location vector = {}".format(len(loc)))
 
   return loc 
   
