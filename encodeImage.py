@@ -1,15 +1,19 @@
 from PIL import Image
 
-imageIo = 'jim.jpg'
-# textIo
+imageIO = 'jim.jpg'
+textIO = 'othello.txt'
 
 class text:
   def __init__(self, path):
-    pass
+    f = open(path, 'r')
+    self.text = f.read()
+    self.words = self.text.split(' ') # Split the words over spaces.
         
 class image:
   def __init__(self, path):
-    pass 
+    self.image = Image.open(path)
+    self.width = self.image.width 
+    self.height = self.image.height
 
 # String to binary array
 def stringToBinary(string):
@@ -19,6 +23,11 @@ def stringToBinary(string):
   return serial
 
 def main():
+
+  txt = text(textIO)
+  img = image(imageIO)
+  
+  print(len(txt.text))
 
 if __name__ == "__main__":
     main()
