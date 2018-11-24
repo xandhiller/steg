@@ -81,20 +81,40 @@ def getPixelValues(img):
       pix.append(p)
   return pix
   
-def distributiveEncode(pixel, char):
-  if char > 127:
+def distEncodePixel(pixel, char):
+  if ord(char) > 127:
     char = 127
+  else:
+    char = ord(char)
   #                                  bits  6543210
   # Treat the 7 bits of the char like this BBGGGRR
   redAdd = char & 0x03
   greenAdd = (char >> 2) & 0x07
   blueAdd = (char >> 5) & 0x03
 
+  # Alter the pixels with the fragmented information.
+  p = [0,0,0]
   p[0] = pixel[0] + redAdd
   p[1] = pixel[1] + greenAdd
   p[2] = pixel[2] + blueAdd
 
   return tuple(p)
+  
+
+def distEncode(stegno):
+  width, height = stegno.picDim
+  # Init a new image to store stuff into of the same size as the given one.
+  encoded = Image.open('jim.jpg')
+  chars = stegno.text.raw
+  origPxl = stegno.originalPixels
+  loc = []
+  for i in range(height):
+    for j in range(width):
+      loc.append(tuple([j,i])) #NOTE: Location has to be a tuple
+  for i in range(len(chars)):
+    p = distEncodePixel(origPxl[i], chars[i])
+    encoded.putpixel(loc[i], p)
+  return encoded
 
 # Encode the text into the image and return an image object as the end 
 #   result.
@@ -148,7 +168,7 @@ def decode(self, encoded, original):
 # Main -- runs when the script is executed
 def main():
   steg = makeSteganograph(textIO, imageIO)
-  othelloJim = endEncode(steg)
+  othelloJim = distEncode(steg)
   othelloJim.save("othelloJim.jpg", "JPEG")
 
 
