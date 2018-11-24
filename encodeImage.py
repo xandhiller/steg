@@ -3,17 +3,45 @@ from PIL import Image
 imageIO = 'jim.jpg'
 textIO = 'othello.txt'
 
+################################################################################
+# Classes
+################################################################################
+
 class text:
   def __init__(self, path):
     f = open(path, 'r')
-    self.text = f.read()
-    self.words = self.text.split(' ') # Split the words over spaces.
+    self.raw = f.read()
+    self.words = self.raw.split(' ') # Split the words over spaces.
+
         
 class image:
   def __init__(self, path):
     self.image = Image.open(path)
     self.width = self.image.width 
     self.height = self.image.height
+
+class steganograph(text, image):
+  def __init__(self, textPath, imagePath):
+    self.text = text(textPath)
+    self.image = image(imagePath)
+
+  def length(self):
+    chars = len(self.text.raw)
+    wrds = len(self.text.words)
+    w,h = self.image.image.size
+    print("Number of characters: \t\t"        + str(chars) + "\n",
+          "Number of words: \t\t"             + str(wrds) + "\n",
+          "Width of image (in pixels): \t"              + str(w) + "\n",
+          "Height of image (in pixels): \t" + str(h) + "\n")
+
+
+
+
+
+
+################################################################################
+# Functions
+################################################################################
 
 # String to binary array
 def stringToBinary(string):
@@ -22,16 +50,34 @@ def stringToBinary(string):
     serial.append(int(bin(ord(character))[2:]))
   return serial
 
-def main():
-
-  txt = text(textIO)
-  img = image(imageIO)
+# Assumes img is an 'Image' object from PIL
+def getPixelValues(img):
+  pix = []
+  for i in range(img.height):
+    for j in range(img.width):
+      loc = (j,i) #NOTE: Location has to be a tuple
+      p = img.getpixel(loc)
+      p = list(p) # Format data to be able to be edited.
+      pix.append(p)
   
-  print(len(txt.text))
+  
+# Main -- runs when the script is executed
+def main():
+  steg = steganograph(textIO, imageIO)
+  steg.length()
 
+
+
+
+
+################################################################################
+# Admin
+################################################################################
 if __name__ == "__main__":
     main()
 
+################################################################################ 
+# Notes
 ################################################################################ 
 
 #TODO:
