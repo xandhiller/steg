@@ -109,10 +109,21 @@ def endEncodePixel(pixel, char):
   p[1] = (middleMask & shelf) >> 8
   p[2] = (rightMask & shelf) 
   return tuple(p)
-  
 
-def decodePixel():
-  pass
+def endDecodePixel(oldPixel, newPixel):
+  newShelf = (newPixel[0] << 16) | (newPixel[1] << 8) | (newPixel[2])
+  oldShelf = (oldPixel[0] << 16) | (oldPixel[1] << 8) | (oldPixel[2])
+  shelf = newShelf - oldShelf
+  leftMask    = 255 << 16
+  middleMask  = 255 << 8
+  rightMask   = 255
+  p = [0,0,0]
+  p[0] = (leftMask & shelf)   >> 16
+  p[1] = (middleMask & shelf) >> 8
+  p[2] = (rightMask & shelf) 
+  char = chr(p[2])
+  return char
+
 
 # Take in the image with the encoded text and the original image (no encoded
 #   text) and return the encoded message.
@@ -122,11 +133,6 @@ def decode(self, encoded, original):
 # Main -- runs when the script is executed
 def main():
   steg = makeSteganograph(textIO, imageIO)
-  steg.length()
-# print(steg.nbPixelsNeeded)
-#
-#
-# encodePixel([1,2,3])
   othelloJim = endEncode(steg)
   othelloJim.save("othelloJim.jpg", "JPEG")
 
