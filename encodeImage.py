@@ -1,4 +1,5 @@
 from PIL import Image
+import time
 
 imageIO = 'jim.jpg'
 textIO = 'othello.txt'
@@ -67,6 +68,7 @@ def stringToInt(string):
   serial = []
   for character in string:
     serial.append(int(ord(character)))
+
   return serial
 
   
@@ -80,6 +82,7 @@ def getPixelValues(img):
       p = list(p) # Format data to be able to be edited.
       pix.append(p)
   return pix
+  
   
 def distEncodePixel(pixel, char):
   if ord(char) > 127:
@@ -107,14 +110,18 @@ def distEncode(stegno):
   encoded = Image.open('jim.jpg')
   chars = stegno.text.raw
   origPxl = stegno.originalPixels
+
   loc = []
   for i in range(height):
     for j in range(width):
       loc.append(tuple([j,i])) #NOTE: Location has to be a tuple
+
   for i in range(len(chars)):
     p = distEncodePixel(origPxl[i], chars[i])
     encoded.putpixel(loc[i], p)
+
   return encoded
+
 
 # Encode the text into the image and return an image object as the end 
 #   result.
@@ -124,13 +131,16 @@ def endEncode(stegno):
   encoded = Image.open('jim.jpg')
   chars = stegno.text.raw
   origPxl = stegno.originalPixels
+
   loc = []
   for i in range(height):
     for j in range(width):
       loc.append(tuple([j,i])) #NOTE: Location has to be a tuple
+  
   for i in range(len(chars)):
     p = endEncodePixel(origPxl[i], chars[i])
     encoded.putpixel(loc[i], p)
+
   return encoded
 
 def endEncodePixel(pixel, char):
@@ -159,19 +169,54 @@ def endDecodePixel(oldPixel, newPixel):
   char = chr(p[2])
   return char
 
-
+def getFileDate():
+  string = time.asctime()
+  string = string.split(' ')[1:] # Get rid of the spaces and format
+  string = '_'.join(string)
+  string = string.split(':')
+  string = '.'.join(string)
+  string = string[0:3] + string[4:] # Format it prettier.
+  return string
+  
 # Take in the image with the encoded text and the original image (no encoded
-#   text) and return the encoded message.
-def decode(self, encoded, original):
-  pass
+#   text) and log the encoded message, returning True if success.
+# TODO
+def endDecode(origImg, ecdImg):
+  oWidth, oHeight = origImg.size
+  eWidth, eHeight = ecdImg.size
+  
+  # TODO: Turn into error class not just a print message.
+  if oWidth != eWidth and oHeight != eHeight:
+    print("Dimensions of images do not agree.")
+    return None
+
+  # Decoded message may be long, so it will be written to a file.
+  outputPath = "decoded/" + getFileDate() + "_" + imageIO[:-4] + '.txt'
+  decoded = open(outputPath, "w")
+  
+  loc = [] # Create the tuple of all x,y coordinates in the image
+  for i in range(eHeight):
+    for j in range(eWidth):
+      loc.append(tuple([j,i])) #NOTE: Location has to be a tuple
+
+  for i in range(len(loc)):
+    # Grab a pixel and make it editable (as a list)
+    origPxl = list(origImg.getpixel(loc[i]))
+    ecdPxl = list(ecdImg.getpixel(loc[i]))
+    c = endDecodePixel(origPxl, ecdPxl)
+    decoded.write(str(c))
+  decoded.close()
+
+  return True
   
 # Main -- runs when the script is executed
 def main():
-  steg = makeSteganograph(textIO, imageIO)
-  othelloJim = distEncode(steg)
-  othelloJim.save("othelloJim.jpg", "JPEG")
-
-
+#  steg = makeSteganograph(textIO, imageIO)
+#  othelloJim = distEncode(steg)
+#  othelloJim.save("othelloJim.jpg", "JPEG")
+  original = Image.open('jim.jpg')
+  encoded = Image.open('endEncodedResult.jpg')
+  endDecode(original, encoded)
 
 ################################################################################
 # Admin
@@ -183,15 +228,13 @@ if __name__ == "__main__":
 # Notes
 ################################################################################ 
 
-#TODO:
-# Serialise a message into binary.
-# Get size of image --  width and height
+# TODO:
 # When doing arithmetic adding letters in, have to handle for overflow issues,
 #   recall that the text has to be recoverable, so you must be able to pull it 
 #   out with an inverse method.
 
 
-#HOWTO:
+# NOTE:
 
 # Take in image for encoding.
 #im = Image.open(io)
@@ -199,12 +242,3 @@ if __name__ == "__main__":
 # Must pass tuple of x,y cooridnate of pixel you want.
 #im.getpixel((0,0))
 
-# How to use stringToBinary(string)
-# x = "Hello world"
-# print("x before edit: ")
-# print(x)
-# print(type((x)))
-# x = stringToBinary(x)
-# print("x after edit: ")
-# print(x) 
-# print(type(x))
