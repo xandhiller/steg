@@ -81,6 +81,21 @@ def getPixelValues(img):
       pix.append(p)
   return pix
   
+def distributiveEncode(pixel, char):
+  if char > 127:
+    char = 127
+  #                                  bits  6543210
+  # Treat the 7 bits of the char like this BBGGGRR
+  redAdd = char & 0x03
+  greenAdd = (char >> 2) & 0x07
+  blueAdd = (char >> 5) & 0x03
+
+  p[0] = pixel[0] + redAdd
+  p[1] = pixel[1] + greenAdd
+  p[2] = pixel[2] + blueAdd
+
+  return tuple(p)
+
 # Encode the text into the image and return an image object as the end 
 #   result.
 def endEncode(stegno):
@@ -99,30 +114,15 @@ def endEncode(stegno):
   return encoded
 
 def endEncodePixel(pixel, char):
-  # shelf = (pixel[0] << 16) | (pixel[1] << 8) | (pixel[2])
-  # shelf += ord(char)
-  # leftMask    = 255 << 16
-  # middleMask  = 255 << 8
-  # rightMask   = 255
-  # p = [0,0,0]
-  # p[0] = (leftMask & shelf)   >> 16
-  # p[1] = (middleMask & shelf) >> 8
-  # p[2] = (rightMask & shelf) 
-
-  # Make sure we are only dealing with 7 bits
-  if char > 127:
-    char = 127
-  
-  #                                 bits   6543210
-  # Treat the 7 bits of the char like this BBGGGRR  
-  redAdd = char & 0x03
-  greenAdd = (char >> 2) & 0x07
-  blueAdd = (char >> 5) & 0x03
-
-  p[0] = pixel[0] + redAdd
-  p[1] = pixel[1] + greenAdd 
-  p[2] = pixel[2] + blueAdd 
-
+  shelf = (pixel[0] << 16) | (pixel[1] << 8) | (pixel[2])
+  shelf += ord(char)
+  leftMask    = 255 << 16
+  middleMask  = 255 << 8
+  rightMask   = 255
+  p = [0,0,0]
+  p[0] = (leftMask & shelf)   >> 16
+  p[1] = (middleMask & shelf) >> 8
+  p[2] = (rightMask & shelf) 
   return tuple(p)
 
 def endDecodePixel(oldPixel, newPixel):
