@@ -104,12 +104,13 @@ def endEncodePixel(pixel, char):
   # leftMask    = 255 << 16
   # middleMask  = 255 << 8
   # rightMask   = 255
-  # p = [0,0,0]
+  p = [0,0,0]
   # p[0] = (leftMask & shelf)   >> 16
   # p[1] = (middleMask & shelf) >> 8
   # p[2] = (rightMask & shelf) 
 
   # Make sure we are only dealing with 7 bits
+  char = ord(char)
   if char > 127:
     char = 127
   
