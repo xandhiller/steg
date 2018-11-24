@@ -21,11 +21,15 @@ class image:
     self.height = self.image.height
 
 
-class steganograph(text, image):
+# Class to get the text into an image. Both are specified and an end product 
+#   is saved.
+class makeSteganograph(text, image):
   def __init__(self, textPath, imagePath):
     self.text = text(textPath)
     self.image = image(imagePath)
     self.serialisedText = stringToInt(self.text.raw)
+    self.nbPixelsNeeded = len(self.serialisedText)
+    self.originalPixels = getPixelValues(self.image.image)
 
   def length(self):
     chars = len(self.text.raw)
@@ -37,6 +41,9 @@ class steganograph(text, image):
           "Height of image (in pixels): \t"   + str(h)      + "\n")
 
 
+class decodeSteganograph(text, image):
+  def __init__(self):
+    pass
 
 
 
@@ -61,15 +68,39 @@ def getPixelValues(img):
       p = img.getpixel(loc)
       p = list(p) # Format data to be able to be edited.
       pix.append(p)
+  return pix
   
+# Encode the text into the image and return an image object as the end 
+#   result.
+def encode(self):
+  pass
+
+def encodePixel(pixel, char):
+  shelf = (pixel[0] << 16) | (pixel[1] << 8) | (pixel[2])
+  shelf += ord(char)
+  leftMask = 255 << 16
+  middleMask = 255 << 8
+  rightMask = 255
+  
+
+def decodePixel()
+  pass
+
+# Take in the image with the encoded text and the original image (no encoded
+#   text) and return the encoded message.
+def decode(self, encoded, original):
+  pass
   
 # Main -- runs when the script is executed
 def main():
-  steg = steganograph(textIO, imageIO)
+  steg = makeSteganograph(textIO, imageIO)
   steg.length()
-  print(steg.serialisedText)
+  print(steg.nbPixelsNeeded)
 
+  print("Max value in steg is: " + str(max(steg.serialisedText)))
+  print("Min value in steg is: " + str(min(steg.serialisedText)))
 
+  encodePixel([1,2,3])
 
 
 ################################################################################
