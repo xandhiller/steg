@@ -110,6 +110,7 @@ def endEncodePixel(pixel, char):
   # p[2] = (rightMask & shelf) 
 
   # Make sure we are only dealing with 7 bits
+  char = ord(char)
   if char > 127:
     char = 127
   
