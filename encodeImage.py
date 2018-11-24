@@ -7,7 +7,7 @@ class text:
     def __init__:
         
 class image:
-    def __init__:
+    def __init__(self, path):
 
 
 # String to binary array
