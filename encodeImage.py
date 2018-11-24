@@ -13,23 +13,35 @@ class text:
     self.raw = f.read()
     self.words = self.raw.split(' ') # Split the words over spaces.
 
-        
 class image:
   def __init__(self, path):
     self.image = Image.open(path)
     self.width = self.image.width 
     self.height = self.image.height
 
-
 # Class to get the text into an image. Both are specified and an end product 
 #   is saved.
 class makeSteganograph(text, image):
   def __init__(self, textPath, imagePath):
-    self.text = text(textPath)
-    self.image = image(imagePath)
+    self.textPath       = textPath
+    self.imagePath      = imagePath
+    self.text           = text(textPath)
+    self.image          = image(imagePath)
     self.serialisedText = stringToInt(self.text.raw)
+    self.maxTextValue   = max(self.serialisedText)
+    self.minTextValue   = min(self.serialisedText)
     self.nbPixelsNeeded = len(self.serialisedText)
     self.originalPixels = getPixelValues(self.image.image)
+    self.picDim         = self.image.image.size
+    self.possible       = self.stegnoPossible()
+
+  def stegnoPossible(self):
+    nbPixels = self.picDim[0]*self.picDim[1]
+    needed = self.nbPixelsNeeded
+    if needed > nbPixels:
+      return False
+    else:
+      return True
 
   def length(self):
     chars = len(self.text.raw)
@@ -40,11 +52,9 @@ class makeSteganograph(text, image):
           "Width of image (in pixels): \t"    + str(w)      + "\n"
           "Height of image (in pixels): \t"   + str(h)      + "\n")
 
-
 class decodeSteganograph(text, image):
   def __init__(self):
     pass
-
 
 
 ################################################################################
@@ -59,6 +69,7 @@ def stringToInt(string):
     serial.append(int(ord(character)))
   return serial
 
+  
 # Assumes img is an 'Image' object from PIL
 def getPixelValues(img):
   pix = []
@@ -72,18 +83,35 @@ def getPixelValues(img):
   
 # Encode the text into the image and return an image object as the end 
 #   result.
-def encode(self):
-  pass
+def endEncode(stegno):
+  width, height = stegno.picDim
+  # Init a new image to store stuff into of the same size as the given one.
+  encoded = Image.open('jim.jpg')
+  chars = stegno.text.raw
+  origPxl = stegno.originalPixels
+  loc = []
+  for i in range(height):
+    for j in range(width):
+      loc.append(tuple([j,i])) #NOTE: Location has to be a tuple
+  for i in range(len(chars)):
+    p = endEncodePixel(origPxl[i], chars[i])
+    encoded.putpixel(loc[i], p)
+  return encoded
 
-def encodePixel(pixel, char):
+def endEncodePixel(pixel, char):
   shelf = (pixel[0] << 16) | (pixel[1] << 8) | (pixel[2])
   shelf += ord(char)
-  leftMask = 255 << 16
-  middleMask = 255 << 8
-  rightMask = 255
+  leftMask    = 255 << 16
+  middleMask  = 255 << 8
+  rightMask   = 255
+  p = [0,0,0]
+  p[0] = (leftMask & shelf)   >> 16
+  p[1] = (middleMask & shelf) >> 8
+  p[2] = (rightMask & shelf) 
+  return tuple(p)
   
 
-def decodePixel()
+def decodePixel():
   pass
 
 # Take in the image with the encoded text and the original image (no encoded
@@ -95,12 +123,13 @@ def decode(self, encoded, original):
 def main():
   steg = makeSteganograph(textIO, imageIO)
   steg.length()
-  print(steg.nbPixelsNeeded)
+# print(steg.nbPixelsNeeded)
+#
+#
+# encodePixel([1,2,3])
+  othelloJim = endEncode(steg)
+  othelloJim.save("othelloJim.jpg", "JPEG")
 
-  print("Max value in steg is: " + str(max(steg.serialisedText)))
-  print("Min value in steg is: " + str(min(steg.serialisedText)))
-
-  encodePixel([1,2,3])
 
 
 ################################################################################
