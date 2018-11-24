@@ -20,20 +20,21 @@ class image:
     self.width = self.image.width 
     self.height = self.image.height
 
+
 class steganograph(text, image):
   def __init__(self, textPath, imagePath):
     self.text = text(textPath)
     self.image = image(imagePath)
+    self.serialisedText = stringToInt(self.text.raw)
 
   def length(self):
     chars = len(self.text.raw)
     wrds = len(self.text.words)
     w,h = self.image.image.size
-    print("Number of characters: \t\t"        + str(chars) + "\n",
-          "Number of words: \t\t"             + str(wrds) + "\n",
-          "Width of image (in pixels): \t"              + str(w) + "\n",
-          "Height of image (in pixels): \t" + str(h) + "\n")
-
+    print("Number of characters: \t\t"        + str(chars)  + "\n"
+          "Number of words: \t\t"             + str(wrds)   + "\n"
+          "Width of image (in pixels): \t"    + str(w)      + "\n"
+          "Height of image (in pixels): \t"   + str(h)      + "\n")
 
 
 
@@ -43,11 +44,12 @@ class steganograph(text, image):
 # Functions
 ################################################################################
 
-# String to binary array
-def stringToBinary(string):
+# String to integer array
+# Integers are the unicode value of that integer in unicode.
+def stringToInt(string):
   serial = []
   for character in string:
-    serial.append(int(bin(ord(character))[2:]))
+    serial.append(int(ord(character)))
   return serial
 
 # Assumes img is an 'Image' object from PIL
@@ -65,7 +67,7 @@ def getPixelValues(img):
 def main():
   steg = steganograph(textIO, imageIO)
   steg.length()
-
+  print(steg.serialisedText)
 
 
 
@@ -83,6 +85,9 @@ if __name__ == "__main__":
 #TODO:
 # Serialise a message into binary.
 # Get size of image --  width and height
+# When doing arithmetic adding letters in, have to handle for overflow issues,
+#   recall that the text has to be recoverable, so you must be able to pull it 
+#   out with an inverse method.
 
 
 #HOWTO:
