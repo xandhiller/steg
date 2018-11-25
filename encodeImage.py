@@ -110,10 +110,15 @@ def distEncode(stegno):
   chars = stegno.text.raw
   origPxl = stegno.originalPixels
 
-  loc = []
-  for i in range(height):
-    for j in range(width):
-      loc.append(tuple([j,i])) #NOTE: Location has to be a tuple
+# loc = []
+# for i in range(height):
+#   for j in range(width):
+#     loc.append(tuple([j,i])) #NOTE: Location has to be a tuple
+
+  loc = getPixelLocations(stegno.image, stegno.nbPixelsNeeded)
+
+  logging.info("The last image pixel to be encoded will be = {}".format(
+               loc[len(chars) -1]))
 
   for i in range(len(chars)):
     p = distEncodePixel(origPxl[i], chars[i])
@@ -122,8 +127,7 @@ def distEncode(stegno):
   return encoded
 
 
-# Encode the text into the image and return an image object as the end 
-#   result.
+# Encode the text into the image and return an image object as the end result.
 def endEncode(stegno):
   width, height = stegno.picDim
   # Init a new image to store stuff into of the same size as the given one.
@@ -131,11 +135,16 @@ def endEncode(stegno):
   chars = stegno.text.raw
   origPxl = stegno.originalPixels
 
-  loc = []
-  for i in range(height):
-    for j in range(width):
-      loc.append(tuple([j,i])) #NOTE: Location has to be a tuple
+# loc = []
+# for i in range(height):
+#   for j in range(width):
+#     loc.append(tuple([j,i])) #NOTE: Location has to be a tuple
   
+  loc = getPixelLocations(stegno.image, stegno.nbPixelsNeeded)
+
+  logging.info("The last image pixel to be encoded will be = {}".format(
+               loc[len(chars) -1]))
+
   for i in range(len(chars)):
     p = endEncodePixel(origPxl[i], chars[i])
     encoded.putpixel(loc[i], p)
@@ -214,7 +223,6 @@ def getPixelLocations(img, nbPixelsNeeded):
   nbPxlAvailable = w*h
 
   # Periodicity = How many pixels between an encoded pixel.
-  # period = ceil(nbPxlAvailable / nbPixelsNeeded)
   period = nbPxlAvailable // nbPixelsNeeded
 
   loc = []
@@ -235,9 +243,11 @@ def getPixelLocations(img, nbPixelsNeeded):
 # Main -- runs when the script is executed
 def main():
   steg = makeSteganograph(textIO, imageIO)
-  l = getPixelLocations(steg.image, steg.nbPixelsNeeded)
-  print(len(l))
-  print(l[:20])
+#  l = getPixelLocations(steg.image, steg.nbPixelsNeeded)
+  im = endEncode(steg)  
+  im.save("diffuseEndMsgTest.jpg", "JPEG")
+  im = distEncode(steg)
+  im.save("diffuseDstMsgTest.jpg", "JPEG")
 
 
 ################################################################################
@@ -246,7 +256,7 @@ def main():
 imageIO = 'jim.jpg'
 textIO = 'othello.txt'
 
-logging.basicConfig(level=logging.INFO, 
+logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 if __name__ == "__main__":
