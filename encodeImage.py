@@ -224,6 +224,8 @@ def getPixelLocations(img, nbPixelsNeeded):
 
   # Periodicity = How many pixels between an encoded pixel.
   period = nbPxlAvailable // nbPixelsNeeded
+  if (w % period == 0) and period > 1:
+    period -= 1
 
   loc = []
   for i in range(h):
@@ -253,6 +255,7 @@ def main():
 ################################################################################
 # Admin
 ################################################################################
+
 imageIO = 'jim.jpg'
 textIO = 'othello.txt'
 
