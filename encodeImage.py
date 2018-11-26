@@ -275,6 +275,11 @@ if __name__ == "__main__":
 #   out with an inverse method.
 # Be able to evenly distribute encoded pixels with a location array generator
 # Leftshift the "redAdd" etc so that more distortion is caused
+# Bulk encode the data. After data is encoded, put random noise into the rest
+#   of the pixels. Use the image as the input to an algorithm that will 
+#   generate the location in the "noisy" section of how long the message 
+#   actually is, so you know when to stop decoding. In this way, the original
+#   image will be the entire key to decrypting. 
 
 
 # NOTE:
