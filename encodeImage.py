@@ -1,7 +1,7 @@
 from PIL import Image
 import time
 import logging
-from math import ceil
+from random import randint
 
 ################################################################################
 # Classes
@@ -34,6 +34,8 @@ class makeSteganograph(text, image):
     self.originalPixels = getPixelValues(self.image.image)
     self.picDim         = self.image.image.size
     self.possible       = self.stegnoPossible()
+    self.imgFilePath    = imageIO
+    self.textFilePath   = textIO
 
   def stegnoPossible(self):
     nbPixels = self.picDim[0]*self.picDim[1]
@@ -84,10 +86,11 @@ def getPixelValues(img):
   
   
 def distEncodePixel(pixel, char):
-  if ord(char) > 127:
-    char = 127
-  else:
-    char = ord(char)
+  if type(char) == str:
+    if ord(char) > 127:
+      char = 127
+    else:
+      char = ord(char)
   #                                  bits  6543210
   # Treat the 7 bits of the char like this BBGGGRR
   redAdd = char & 0x03
@@ -128,28 +131,42 @@ def distEncode(stegno):
 
 
 # Encode the text into the image and return an image object as the end result.
-def endEncode(stegno):
+def bulkEncode(stegno):
   width, height = stegno.picDim
   # Init a new image to store stuff into of the same size as the given one.
-  encoded = Image.open('jim.jpg')
+  encoded = Image.open(stegno.imgFilePath)
   chars = stegno.text.raw
   origPxl = stegno.originalPixels
 
-# loc = []
-# for i in range(height):
-#   for j in range(width):
-#     loc.append(tuple([j,i])) #NOTE: Location has to be a tuple
+  loc = []
+  for i in range(height):
+    for j in range(width):
+      loc.append(tuple([j,i])) #NOTE: Location has to be a tuple
   
-  loc = getPixelLocations(stegno.image, stegno.nbPixelsNeeded)
+  #loc = getPixelLocations(stegno.image, stegno.nbPixelsNeeded)
 
   logging.info("The last image pixel to be encoded will be = {}".format(
                loc[len(chars) -1]))
 
   for i in range(len(chars)):
-    p = endEncodePixel(origPxl[i], chars[i])
+    p = distEncodePixel(origPxl[i], chars[i])
+    encoded.putpixel(loc[i], p)
+
+  # Add random noise to the rest of the image.
+  for i in range(len(chars), len(loc)):
+    noise = randint(0, 127)
+    original = list(encoded.getpixel(tuple(loc[i])))
+
+    if loc[i] == loc[-10]:
+      logging.debug("noise is {}\toriginal is: {}".format(noise, original))
+      logging.debug("type of noise is {}\ttype of original is: {}".format(
+                    type(noise), type(original)))
+
+    p = distEncodePixel(original, noise)
     encoded.putpixel(loc[i], p)
 
   return encoded
+
 
 def endEncodePixel(pixel, char):
   shelf = (pixel[0] << 16) | (pixel[1] << 8) | (pixel[2])
@@ -163,6 +180,7 @@ def endEncodePixel(pixel, char):
   p[2] = (rightMask & shelf) 
   return tuple(p)
 
+  
 def endDecodePixel(oldPixel, newPixel):
   newShelf = (newPixel[0] << 16) | (newPixel[1] << 8) | (newPixel[2])
   oldShelf = (oldPixel[0] << 16) | (oldPixel[1] << 8) | (oldPixel[2])
@@ -176,6 +194,7 @@ def endDecodePixel(oldPixel, newPixel):
   p[2] = (rightMask & shelf) 
   char = chr(p[2])
   return char
+
 
 def getFileDate():
   string = time.asctime()
@@ -245,18 +264,15 @@ def getPixelLocations(img, nbPixelsNeeded):
 # Main -- runs when the script is executed
 def main():
   steg = makeSteganograph(textIO, imageIO)
-#  l = getPixelLocations(steg.image, steg.nbPixelsNeeded)
-  im = endEncode(steg)  
-  im.save("diffuseEndMsgTest.jpg", "JPEG")
-  im = distEncode(steg)
-  im.save("diffuseDstMsgTest.jpg", "JPEG")
+  im = bulkEncode(steg)  
+  im.save("bulkDistDog_wNoise.jpg", "JPEG")
 
 
 ################################################################################
 # Admin
 ################################################################################
 
-imageIO = 'jim.jpg'
+imageIO = 'dog.jpg'
 textIO = 'othello.txt'
 
 logging.basicConfig(level=logging.DEBUG,
@@ -297,3 +313,7 @@ if __name__ == "__main__":
 # original = Image.open('jim.jpg')
 # encoded = Image.open('endEncodedResult.jpg')
 # endDecode(original, encoded) # Doesn't work.
+# im.save("diffuseEndMsgTest.jpg", "JPEG")
+# im = distEncode(steg)
+# im.save("diffuseDstMsgTest.jpg", "JPEG")
+#  l = getPixelLocations(steg.image, steg.nbPixelsNeeded)
